@@ -1,22 +1,16 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UDPGameBackend", "UDPGameBackend\UDPGameBackend.csproj", "{825C42D6-6A26-4993-B7EB-7CA2902B449B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UDPGameServer", "UDPGameServer\UDPGameServer.csproj", "{962DC66D-7A9B-49FA-B56B-36132EBB82AE}"
-EndProject
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{825C42D6-6A26-4993-B7EB-7CA2902B449B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{825C42D6-6A26-4993-B7EB-7CA2902B449B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{825C42D6-6A26-4993-B7EB-7CA2902B449B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{825C42D6-6A26-4993-B7EB-7CA2902B449B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{962DC66D-7A9B-49FA-B56B-36132EBB82AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{962DC66D-7A9B-49FA-B56B-36132EBB82AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{962DC66D-7A9B-49FA-B56B-36132EBB82AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{962DC66D-7A9B-49FA-B56B-36132EBB82AE}.Release|Any CPU.Build.0 = Release|Any CPU
+
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
