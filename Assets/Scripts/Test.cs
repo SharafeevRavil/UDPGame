@@ -22,19 +22,28 @@ public class Test : MonoBehaviour
 
     public string guid;
     private int port;
-    
+
     void Start()
     {
         guid = Guid.NewGuid().ToString();
-        port = UnityEngine.Random.Range(0, 65536);
-
-        UdpClient client = new UdpClient();
+        
+        TcpClient client = new TcpClient();
         client.Connect(hostname, 8001);
-        string message = port.ToString();
-        byte[] data = Encoding.UTF8.GetBytes(message);
-        client.Send(data, data.Length);
-        client.Close();
+        StringBuilder response = new StringBuilder();
+        NetworkStream stream = client.GetStream();
+        if (stream.CanRead)
+        {
+            byte[] myReadBuffer = new byte[1024];
+            do
+            {
+                var numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
 
+                response.AppendFormat("{0}",
+                    Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
+            } while (stream.DataAvailable);
+        }
+
+        port = int.Parse(response.ToString());
 
         _receiveThread = new Thread(ReceiveData);
         _receiveThread.IsBackground = true;
@@ -106,18 +115,6 @@ public class Test : MonoBehaviour
             }
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
     public GameObject prefab;
 
