@@ -32,7 +32,7 @@ public class Test : MonoBehaviour
         StringBuilder portsResponse = new StringBuilder();
         NetworkStream stream = client.GetStream();
         //Send guids
-        byte[] buffer = Encoding.UTF8.GetBytes(guid);
+        byte[] buffer = Encoding.UTF8.GetBytes(guid.ToString());
         stream.Write(buffer, 0, buffer.Length);
         //Receive ports from server
         if (stream.CanRead)

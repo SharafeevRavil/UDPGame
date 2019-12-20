@@ -63,7 +63,7 @@ namespace UDPGameServer
                 int serverPort = random.Next(32768, 65535);
                 lock (ClientsLock)
                 {
-                    while (Clients.Values.All(x => x.ServerPort != serverPort))
+                    while (Clients.Values.Any(x => x.ServerPort == serverPort))
                     {
                         serverPort = random.Next(32768, 65535);
                     }
@@ -84,8 +84,9 @@ namespace UDPGameServer
 
 
                 Console.WriteLine($"Зарегистрирован клиент {clientSendIp.Address}:{clientSendIp.Port}");
-                //Пишу в ответ порт, на который сервер будет отправлять пакеты
-                stream.Write(Encoding.UTF8.GetBytes(clientSendIp.Port.ToString()));
+                //Пишу в ответ порты
+                stream.Write(
+                    Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new PortsAuthData(clientPort, serverPort))));
 
                 stream.Close();
                 tcpClient.Close();
@@ -139,7 +140,7 @@ namespace UDPGameServer
 
             while (true)
             {
-                if (!client.SendFirstInfo)
+                if (!client.ReceivedFirstInfo)
                 {
                     Thread.Sleep(200);
                     continue;
@@ -147,12 +148,7 @@ namespace UDPGameServer
 
                 if (DateTime.Now - client.LastReceive > TimeSpan.FromSeconds(5))
                 {
-                    //disconnect
-                    lock (ClientsLock)
-                    {
-                        Clients.Remove(client.Guid);
-                    }
-
+                    Disconnect(client);
                     break;
                 }
 
@@ -171,6 +167,21 @@ namespace UDPGameServer
                 udpClient.Close();
 
                 Thread.Sleep(200);
+            }
+        }
+
+        private static void Disconnect(Client client)
+        {
+            //disconnect
+            lock (ClientsLock)
+            {
+                Clients.Remove(client.Guid);
+            }
+
+            lock (GameDataLock)
+            {
+                var disconnectedPlayerData = GameData.PlayerDatas.Find(data => data.Guid == client.Guid.ToString());
+                GameData.PlayerDatas.Remove(disconnectedPlayerData);
             }
         }
     }
