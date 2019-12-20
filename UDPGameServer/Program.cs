@@ -10,15 +10,13 @@ using Newtonsoft.Json;
 
 namespace UDPGameServer
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             List<Thread> threads = new List<Thread>();
 
-            threads.Add(new Thread(ListenConnections));
-            threads.Add(new Thread(MarchClients));
-            threads.Add(new Thread(TCPAuth));
+            threads.Add(new Thread(TcpAuth));
 
             foreach (var thread in threads)
             {
@@ -28,93 +26,152 @@ namespace UDPGameServer
             Console.Read();
         }
 
-        private static readonly HashSet<IPEndPoint> ClientsIPs = new HashSet<IPEndPoint>();
-        private static readonly object ClientsIPsLock = new object();
+        private static readonly Dictionary<Guid, Client> Clients = new Dictionary<Guid, Client>();
+        private static readonly object ClientsLock = new object();
 
         private static readonly GameData GameData = new GameData();
         private static readonly object GameDataLock = new object();
 
-        static void TCPAuth()
+        private static void TcpAuth()
         {
             TcpListener listener = new TcpListener(IPAddress.Any, 8001);
             listener.Start();
 
             while (true)
             {
-                TcpClient client = listener.AcceptTcpClient();
-                var stream = client.GetStream();
+                TcpClient tcpClient = listener.AcceptTcpClient();
+                var stream = tcpClient.GetStream();
 
-                IPEndPoint ipEndPoint = (IPEndPoint) client.Client.RemoteEndPoint;
-                lock (ClientsIPsLock)
+                StringBuilder guidResponse = new StringBuilder();
+                if (stream.CanRead)
                 {
-                    ClientsIPs.Add(ipEndPoint);
-                }
-
-                Console.WriteLine($"Зарегистрирован клиент {ipEndPoint.Address}:{ipEndPoint.Port}");
-                stream.Write(Encoding.UTF8.GetBytes(ipEndPoint.Port.ToString()));
-
-
-                stream.Close();
-                client.Close();
-            }
-        }
-
-        static void ListenConnections()
-        {
-            UdpClient client = new UdpClient(8001);
-
-            IPEndPoint ip = null;
-
-            var data = client.Receive(ref ip);
-            Console.WriteLine($"{DateTime.Now} пришел пакет");
-            client.Close();
-            new Thread(ListenConnections).Start();
-
-            //game data
-            string json = Encoding.UTF8.GetString(data);
-            PlayerData playerData = JsonConvert.DeserializeObject<PlayerData>(json);
-            lock (GameDataLock)
-            {
-                if (GameData.PlayerDatas.Any(x => x.Guid == playerData.Guid))
-                {
-                    GameData.PlayerDatas.Remove(GameData.PlayerDatas.First(x => x.Guid == playerData.Guid));
-                }
-
-                GameData.PlayerDatas.Add(playerData);
-            }
-        }
-
-        static void MarchClients()
-        {
-            while (true)
-            {
-                lock (ClientsIPsLock)
-                {
-                    foreach (var clientIP in ClientsIPs)
+                    byte[] myReadBuffer = new byte[1024];
+                    do
                     {
-                        new Thread(() => SendClient(clientIP)).Start();
+                        var numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
+
+                        guidResponse.AppendFormat("{0}",
+                            Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
+                    } while (stream.DataAvailable);
+                }
+
+                Guid clientGuid = Guid.Parse(guidResponse.ToString());
+
+                //Рандомлю порты
+                Random random = new Random();
+                int clientPort = random.Next(32768, 65535);
+                int serverPort = random.Next(32768, 65535);
+                lock (ClientsLock)
+                {
+                    while (Clients.Values.All(x => x.ServerPort != serverPort))
+                    {
+                        serverPort = random.Next(32768, 65535);
                     }
                 }
 
-                Thread.Sleep(200);
+
+                IPEndPoint clientSendIp = (IPEndPoint) tcpClient.Client.RemoteEndPoint;
+                clientSendIp.Port = clientPort;
+                Client client = new Client(clientGuid, clientSendIp, serverPort);
+                lock (ClientsLock)
+                {
+                    Clients[clientGuid] = client;
+                }
+
+
+                new Thread(SendClient).Start(client);
+                new Thread(ListenClient).Start(client);
+
+
+                Console.WriteLine($"Зарегистрирован клиент {clientSendIp.Address}:{clientSendIp.Port}");
+                //Пишу в ответ порт, на который сервер будет отправлять пакеты
+                stream.Write(Encoding.UTF8.GetBytes(clientSendIp.Port.ToString()));
+
+                stream.Close();
+                tcpClient.Close();
             }
         }
 
-        static void SendClient(IPEndPoint clientIP)
+        static void ListenClient(object clientObj)
         {
-            UdpClient client = new UdpClient();
-            client.Connect(clientIP);
-            string json;
-            lock (GameDataLock)
-            {
-                json = JsonConvert.SerializeObject(GameData);
-            }
+            Client client = (Client) clientObj;
 
-            byte[] data = Encoding.UTF8.GetBytes(json);
-            Console.WriteLine($"{DateTime.Now} перед посылкой на {clientIP}");
-            client.Send(data, data.Length);
-            Console.WriteLine($"{DateTime.Now} после посылки на {clientIP}");
-            client.Close();
+            while (true)
+            {
+                lock (ClientsLock)
+                {
+                    if (!Clients.ContainsKey(client.Guid))
+                    {
+                        //Disconnected, not need to listen
+                        return;
+                    }
+                }
+
+                UdpClient udpClient = new UdpClient(client.ServerPort);
+
+                IPEndPoint ip = null;
+
+                var data = udpClient.Receive(ref ip);
+                Console.WriteLine($"{DateTime.Now} пришел пакет от {ip}");
+                udpClient.Close();
+
+                client.Receive();
+
+                //game data
+                string json = Encoding.UTF8.GetString(data);
+                PlayerData playerData = JsonConvert.DeserializeObject<PlayerData>(json);
+                lock (GameDataLock)
+                {
+                    if (GameData.PlayerDatas.Any(x => x.Guid == playerData.Guid))
+                    {
+                        GameData.PlayerDatas.Remove(GameData.PlayerDatas.First(x => x.Guid == playerData.Guid));
+                    }
+
+                    GameData.PlayerDatas.Add(playerData);
+                }
+            }
+        }
+
+        private static void SendClient(object clientObj)
+        {
+            Client client = (Client) clientObj;
+            IPEndPoint clientIp = client.ClientSendIp;
+
+            while (true)
+            {
+                if (!client.SendFirstInfo)
+                {
+                    Thread.Sleep(200);
+                    continue;
+                }
+
+                if (DateTime.Now - client.LastReceive > TimeSpan.FromSeconds(5))
+                {
+                    //disconnect
+                    lock (ClientsLock)
+                    {
+                        Clients.Remove(client.Guid);
+                    }
+
+                    break;
+                }
+
+                UdpClient udpClient = new UdpClient();
+                udpClient.Connect(clientIp);
+                string json;
+                lock (GameDataLock)
+                {
+                    json = JsonConvert.SerializeObject(GameData);
+                }
+
+                byte[] data = Encoding.UTF8.GetBytes(json);
+                Console.WriteLine($"{DateTime.Now} перед посылкой на {clientIp}");
+                udpClient.Send(data, data.Length);
+                Console.WriteLine($"{DateTime.Now} после посылки на {clientIp}");
+                udpClient.Close();
+
+                Thread.Sleep(200);
+            }
         }
     }
 }

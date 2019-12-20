@@ -3,6 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 
 [Serializable]
+public class PortsAuthData
+{
+    public int serverPort;
+    public int clientPort;
+}
+
+[Serializable]
 public class GameData
 {
     public List<PlayerData> PlayerDatas;

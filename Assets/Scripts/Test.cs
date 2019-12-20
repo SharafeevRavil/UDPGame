@@ -21,7 +21,7 @@ public class Test : MonoBehaviour
     private bool _dataChanged = false;
 
     public string guid;
-    private int port;
+    private PortsAuthData _portsAuthData;
 
     void Start()
     {
@@ -29,8 +29,12 @@ public class Test : MonoBehaviour
         
         TcpClient client = new TcpClient();
         client.Connect(hostname, 8001);
-        StringBuilder response = new StringBuilder();
+        StringBuilder portsResponse = new StringBuilder();
         NetworkStream stream = client.GetStream();
+        //Send guids
+        byte[] buffer = Encoding.UTF8.GetBytes(guid);
+        stream.Write(buffer, 0, buffer.Length);
+        //Receive ports from server
         if (stream.CanRead)
         {
             byte[] myReadBuffer = new byte[1024];
@@ -38,17 +42,16 @@ public class Test : MonoBehaviour
             {
                 var numberOfBytesRead = stream.Read(myReadBuffer, 0, myReadBuffer.Length);
 
-                response.AppendFormat("{0}",
+                portsResponse.AppendFormat("{0}",
                     Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
             } while (stream.DataAvailable);
         }
-
-        port = int.Parse(response.ToString());
-
+        _portsAuthData = JsonUtility.FromJson<PortsAuthData>(portsResponse.ToString());
+        //Start a thread, that receives packages
         _receiveThread = new Thread(ReceiveData);
         _receiveThread.IsBackground = true;
         _receiveThread.Start();
-
+        //Start a thread, that send packages
         _sendThread = new Thread(SendData);
         _sendThread.IsBackground = true;
         _sendThread.Start();
@@ -89,7 +92,7 @@ public class Test : MonoBehaviour
             }
 
             UdpClient client = new UdpClient();
-            client.Connect(hostname, 8001);
+            client.Connect(hostname, _portsAuthData.serverPort);
             string json = JsonUtility.ToJson(playerData);
             byte[] data = Encoding.UTF8.GetBytes(json);
             client.Send(data, data.Length);
@@ -101,7 +104,7 @@ public class Test : MonoBehaviour
 
     void ReceiveData()
     {
-        UdpClient client = new UdpClient(port);
+        UdpClient client = new UdpClient(_portsAuthData.clientPort);
         while (true)
         {
             IPEndPoint ip = null;
