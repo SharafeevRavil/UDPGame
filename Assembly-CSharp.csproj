@@ -56,9 +56,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\NewBehaviourScript.cs" />
      <Compile Include="Assets\Scripts\GameData.cs" />
      <Compile Include="Assets\Scripts\PlayerMovement.cs" />
      <Compile Include="Assets\Scripts\Test.cs" />
+     <Compile Include="Assets\WWWAssemblyLoader.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/Admin/RiderProjects/UDPGameUnity/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>
