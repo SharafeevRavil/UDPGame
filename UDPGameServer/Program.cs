@@ -29,7 +29,7 @@ namespace UDPGameServer
         private static readonly Dictionary<Guid, Client> Clients = new Dictionary<Guid, Client>();
         private static readonly object ClientsLock = new object();
 
-        private static readonly GameData GameData = new GameData();
+        private static readonly ServerGameData ServerGameData = new ServerGameData();
         private static readonly object GameDataLock = new object();
 
         private static void TcpAuth()
@@ -120,15 +120,15 @@ namespace UDPGameServer
 
                 //game data
                 string json = Encoding.UTF8.GetString(data);
-                PlayerData playerData = JsonConvert.DeserializeObject<PlayerData>(json);
+                ClientGameData clientGameData = JsonConvert.DeserializeObject<ClientGameData>(json);
                 lock (GameDataLock)
                 {
-                    if (GameData.PlayerDatas.Any(x => x.Guid == playerData.Guid))
+                    if (ServerGameData.CreatureDatas.Any(x => x.Guid == clientGameData.Guid))
                     {
-                        GameData.PlayerDatas.Remove(GameData.PlayerDatas.First(x => x.Guid == playerData.Guid));
+                        ServerGameData.CreatureDatas.Remove(ServerGameData.CreatureDatas.First(x => x.Guid == clientGameData.Guid));
                     }
 
-                    GameData.PlayerDatas.Add(playerData);
+                    ServerGameData.CreatureDatas.Add(clientGameData.PlayerData);
                 }
             }
         }
@@ -157,7 +157,7 @@ namespace UDPGameServer
                 string json;
                 lock (GameDataLock)
                 {
-                    json = JsonConvert.SerializeObject(GameData);
+                    json = JsonConvert.SerializeObject(ServerGameData);
                 }
 
                 byte[] data = Encoding.UTF8.GetBytes(json);
@@ -180,8 +180,8 @@ namespace UDPGameServer
 
             lock (GameDataLock)
             {
-                var disconnectedPlayerData = GameData.PlayerDatas.Find(data => data.Guid == client.Guid.ToString());
-                GameData.PlayerDatas.Remove(disconnectedPlayerData);
+                var disconnectedPlayerData = ServerGameData.CreatureDatas.Find(data => data.Guid == client.Guid.ToString());
+                ServerGameData.CreatureDatas.Remove(disconnectedPlayerData);
             }
         }
     }

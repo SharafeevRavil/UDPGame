@@ -130,6 +130,7 @@ GameObject:
   m_Component:
   - component: {fileID: 446899756}
   - component: {fileID: 446899755}
+  - component: {fileID: 446899757}
   m_Layer: 0
   m_Name: Server
   m_TagString: Untagged
@@ -151,7 +152,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hostname: 127.0.0.1
   guid: 
+  myGameManager: {fileID: 446899757}
   position: {x: 0, y: 0, z: 0}
+  ProjectileDatas: []
   prefab: {fileID: 6989587620835010171, guid: e20be435b4fa9ec44a456aeb2a275360, type: 3}
 --- !u!4 &446899756
 Transform:
@@ -167,6 +170,25 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &446899757
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 446899754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e761bf789a7531c4586b37ca6d4e0431, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ProjectilePrefab: {fileID: 6989587620835010171, guid: bbc77cfe9bd9a9b40ade5e43d83515fa,
+    type: 3}
+  CreaturePrefab: {fileID: 6989587620835010171, guid: e20be435b4fa9ec44a456aeb2a275360,
+    type: 3}
+  IsPlayerDead: 0
+  ProjectileBehaviours: []
+  CreatureBehaviours: []
 --- !u!1 &1494675493
 GameObject:
   m_ObjectHideFlags: 0
@@ -178,6 +200,7 @@ GameObject:
   - component: {fileID: 1494675494}
   - component: {fileID: 1494675496}
   - component: {fileID: 1494675495}
+  - component: {fileID: 1494675497}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -214,6 +237,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 5
   Test: {fileID: 446899755}
+  myGameManager: {fileID: 446899757}
 --- !u!212 &1494675496
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -263,6 +287,19 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &1494675497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1494675493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8981180cfc3a4ed459c12da27b011172, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Test: {fileID: 446899755}
 --- !u!1 &1614746618
 GameObject:
   m_ObjectHideFlags: 0

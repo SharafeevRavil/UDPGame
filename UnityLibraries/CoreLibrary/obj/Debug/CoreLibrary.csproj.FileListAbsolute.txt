@@ -1,0 +1,9 @@
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\bin\Debug\CoreLibrary.dll
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\bin\Debug\CoreLibrary.pdb
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\bin\Debug\UnityEngine.dll
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\bin\Debug\UnityEngine.xml
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\obj\Debug\CoreLibrary.csprojAssemblyReference.cache
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\obj\Debug\CoreLibrary.csproj.CoreCompileInputs.cache
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\obj\Debug\CoreLibrary.csproj.CopyComplete
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\obj\Debug\CoreLibrary.dll
+C:\Users\Admin\RiderProjects\UDPGameUnity\UnityLibraries\CoreLibrary\obj\Debug\CoreLibrary.pdb

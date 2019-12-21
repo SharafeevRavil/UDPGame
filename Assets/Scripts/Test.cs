@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using CoreLibrary;
 using UnityEngine;
 using Random = System.Random;
 
@@ -17,7 +18,7 @@ public class Test : MonoBehaviour
     private Thread _sendThread;
 
     private readonly object _lockData = new object();
-    private GameData _gameData;
+    private ServerGameData _serverGameData;
     private bool _dataChanged = false;
 
     public string guid;
@@ -26,7 +27,7 @@ public class Test : MonoBehaviour
     void Start()
     {
         guid = Guid.NewGuid().ToString();
-        
+
         TcpClient client = new TcpClient();
         client.Connect(hostname, 8001);
         StringBuilder portsResponse = new StringBuilder();
@@ -46,6 +47,7 @@ public class Test : MonoBehaviour
                     Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
             } while (stream.DataAvailable);
         }
+
         _portsAuthData = JsonUtility.FromJson<PortsAuthData>(portsResponse.ToString());
         //Start a thread, that receives packages
         _receiveThread = new Thread(ReceiveData);
@@ -57,6 +59,8 @@ public class Test : MonoBehaviour
         _sendThread.Start();
     }
 
+    public MyGameManager myGameManager;
+
     private void Update()
     {
         lock (_lockData)
@@ -64,8 +68,12 @@ public class Test : MonoBehaviour
             if (_dataChanged)
             {
                 _dataChanged = false;
-                for (int i = transform.childCount - 1; i >= 0; i--)
-                {
+
+                myGameManager.UpdateData(_serverGameData, guid);
+
+
+                /*for (int i = transform.childCount - 1; i >= 0; i--)
+                {x`
                     Destroy(transform.GetChild(i).gameObject);
                 }
 
@@ -73,27 +81,37 @@ public class Test : MonoBehaviour
                 {
                     Instantiate(prefab, new Vector3(playerData.PosX, playerData.PosY, playerData.PosZ),
                         Quaternion.identity, transform);
-                }
+                }*/
             }
         }
     }
 
     public Vector3 position;
-    public readonly object PositionLock = new object();
+    public List<ProjectileData> ProjectileDatas = new List<ProjectileData>();
+    public readonly object PlayerLock = new object();
+
 
     void SendData()
     {
         while (true)
         {
-            PlayerData playerData;
-            lock (PositionLock)
+            ClientGameData clientGameData;
+            lock (PlayerLock)
             {
-                playerData = new PlayerData(guid, position.x, position.y, position.z);
+                CreatureData playerData;
+                playerData = new CreatureData(guid, position.x, position.y, position.z);
+                clientGameData = new ClientGameData
+                {
+                    Guid = guid,
+                    PlayerData = playerData,
+                    ProjectileDatas = ProjectileDatas
+                };
             }
+
 
             UdpClient client = new UdpClient();
             client.Connect(hostname, _portsAuthData.serverPort);
-            string json = JsonUtility.ToJson(playerData);
+            string json = JsonUtility.ToJson(clientGameData);
             byte[] data = Encoding.UTF8.GetBytes(json);
             client.Send(data, data.Length);
             client.Close();
@@ -112,7 +130,7 @@ public class Test : MonoBehaviour
             lock (_lockData)
             {
                 string json = Encoding.UTF8.GetString(data);
-                _gameData = JsonUtility.FromJson<GameData>(json);
+                _serverGameData = JsonUtility.FromJson<ServerGameData>(json);
                 _dataChanged = true;
                 Debug.Log(json);
             }

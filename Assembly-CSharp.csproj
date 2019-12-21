@@ -57,8 +57,16 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\NewBehaviourScript.cs" />
-     <Compile Include="Assets\Scripts\GameData.cs" />
+     <Compile Include="Assets\Scripts\ClientGameData.cs" />
+     <Compile Include="Assets\Scripts\CreatureBehaviour.cs" />
+     <Compile Include="Assets\Scripts\CreatureData.cs" />
+     <Compile Include="Assets\Scripts\MyGameManager.cs" />
      <Compile Include="Assets\Scripts\PlayerMovement.cs" />
+     <Compile Include="Assets\Scripts\PortsAuthData.cs" />
+     <Compile Include="Assets\Scripts\ProjectileBehaviour.cs" />
+     <Compile Include="Assets\Scripts\ProjectileData.cs" />
+     <Compile Include="Assets\Scripts\ProjectileShooter.cs" />
+     <Compile Include="Assets\Scripts\ServerGameData.cs" />
      <Compile Include="Assets\Scripts\Test.cs" />
      <Compile Include="Assets\WWWAssemblyLoader.cs" />
  <Reference Include="Unity.Timeline.Editor">
