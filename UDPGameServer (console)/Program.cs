@@ -12,6 +12,9 @@ namespace UDPGameServer
 {
     public class Program
     {
+        
+        delegate void TestDelegate();
+        
         public static void Main(string[] args)
         {
             List<Thread> threads = new List<Thread>();

@@ -1,3 +1,13 @@
+# MY
+########################
+#*.suo
+#*.user
+#_ReSharper.*
+#bin
+#obj
+#packages
+.idea
+########################
 
 # Created by https://www.gitignore.io/api/rider,unity
 # Edit at https://www.gitignore.io/?templates=rider,unity
